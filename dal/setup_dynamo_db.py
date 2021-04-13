@@ -26,26 +26,15 @@ def getDBConnection():
     db = DynamoDBConnection(**params)
     return db
 
-def createMspCWTable(db):
+def create_msp_connectwise_table(db):
     mspCwTable = None
     try:
-        hostStatusDate = GlobalAllIndex("MspId-Email-index",
-                                        parts=[HashKey("msp_id"), RangeKey("email")],
-                                        throughput={
-                                            'read': 1,
-                                            'write': 1
-                                        })
-
-
-        # global secondary indexes
-        GSI = [hostStatusDate]
 
         mspCwTable = Table.create("msp_cw", schema=[HashKey("msp_id")],
                                   throughput={
                                       'read': 1,
                                       'write': 1
                                   },
-                                  global_indexes=GSI,
                                   connection=db)
     except JSONResponseError as jre:
         try:
@@ -55,5 +44,22 @@ def createMspCWTable(db):
     finally:
         return mspCwTable
 
+def create_remote_access_table(db):
+    remote_access_table = None
+    try:
+
+        remote_access_table = Table.create("remote_access", schema=[HashKey("msp_id")],
+                                  throughput={
+                                      'read': 1,
+                                      'write': 1
+                                  },
+                                  connection=db)
+    except JSONResponseError as jre:
+        try:
+            remote_access_table = Table("remote_access", connection=db)
+        except Exception as e:
+            print e.message
+    finally:
+        return remote_access_table
 
 
